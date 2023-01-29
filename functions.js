@@ -9,6 +9,7 @@ const db = mysql.createConnection(
       user: 'root',
       // MySQL password
       password: 'root',
+     // MYSQL database name
       database: 'employeeDatabase_db'
     }
 );
@@ -21,14 +22,14 @@ function viewAllEmployees() {
     function(err,res){
         if (err) throw err;
         console.table(res);
+        promptUser();
     });
-     promptUser();
+     
 }
 function addEmployee() {
     console.log("Adding a new employee...");
     db.query("SELECT id, title FROM role", function (err, roles) {
         if (err) throw err;
-        // Use map to extract the title of the roles and store them in an array
         const roleTitles = roles.map(role => role.title);
         inquirer
           .prompt([
@@ -66,7 +67,57 @@ function addEmployee() {
 }
 function updateEmployeeRole() {
     console.log("Updating employee role...");
-    promptUser();
+      
+      db.query("SELECT id, first_name, last_name FROM employee", function(err, employees) {
+        if (err) throw err;
+    
+       
+        let employeeChoices = employees.map(employee => {
+          return {
+            name: `${employee.first_name} ${employee.last_name}`,
+            value: employee.id
+          };
+        });
+        db.query("SELECT id, title FROM role", function(err, roles) {
+          if (err) throw err;
+    
+       
+          let roleChoices = roles.map(role => {
+            return {
+              name: role.title,
+              value: role.id
+            };
+          });
+    
+          inquirer
+            .prompt([
+              {
+                type: "list",
+                name: "employee_id",
+                message: "Which employee's role do you want to update?",
+                choices: employeeChoices
+              },
+              {
+                type: "list",
+                name: "role_id",
+                message: "What is the new role?",
+                choices: roleChoices
+              }
+            ])
+            .then(answers => {
+            
+              let sql = `UPDATE employee SET role_id = ${answers.role_id} WHERE id = ${answers.employee_id}`;
+    
+              db.query(sql, function(err, result) {
+                if (err) throw err;
+                console.log("Employee role updated successfully!");
+                promptUser();
+              });
+            });
+        });
+      })
+
+   
 }
 function viewAllRoles() {
     console.log("Viewing all roles...");
@@ -82,7 +133,7 @@ function addRole() {
     db.query("SELECT id, name FROM department", function(err, departments) {
         if (err) throw err;
       
-        // Map the departments to an array of choices
+      
         let departmentChoices = departments.map(department => {
           return {
             name: department.name,
@@ -110,10 +161,7 @@ function addRole() {
             }
           ])
           .then(answers => {
-            // Use the answers object to build the SQL query
-            //let sql = `INSERT INTO role (title, salary, department_id) VALUES ('${answers.title}', ${answers.salary}, ${answers.department_id})`;
-      
-            // Execute the query
+           
             db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${answers.title}', ${answers.salary}, ${answers.department_id})`, function(err, result) {
               if (err) throw err;
               console.log("Role added successfully!");
