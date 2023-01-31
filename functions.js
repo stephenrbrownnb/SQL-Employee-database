@@ -106,8 +106,6 @@ function updateEmployeeRole() {
             ])
             .then(answers => {
             
-              //let sql = `UPDATE employee SET role_id = ${answers.role_id} WHERE id = ${answers.employee_id}`;
-    
               db.query(`UPDATE employee SET role_id = ${answers.role_id} WHERE id = ${answers.employee_id}`, function(err, result) {
                 if (err) throw err;
                 console.log("Employee role updated successfully!");
@@ -195,6 +193,135 @@ function addDepartment() {
             promptUser();
         });
     });
+}
+function updateEmployeeManager() {
+console.log("Updating Employee's Manager");
+db.query("SELECT id, first_name, last_name FROM employee", function(err, employees) {
+  if (err) throw err;
+ let employeeChoices = employees.map(employee => {
+    return {
+      name: `${employee.first_name} ${employee.last_name}`,
+      value: employee.id
+    };
+  });
+  inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "employee_id",
+        message: "Which employee's manager do you want to update?",
+        choices: employeeChoices
+      },
+      {
+        type: "list",
+        name: "manager_id",
+        message: "Who is the new manager?",
+        choices: employeeChoices
+      }
+    ])
+    .then(answers => {
+      db.query(`UPDATE employee SET manager_id = ${answers.manager_id} WHERE id = ${answers.employee_id}`, function(err, result) {
+        if (err) throw err;
+        console.log("Employee manager updated successfully!");
+        promptUser();
+      });
+    });
+});
+}
+function viewEmployeesManager() {
+  db.query("SELECT id, first_name, last_name FROM employee", function(err, employees) {
+    if (err) throw err;
+  
+    let employeeChoices = employees.map(employee => {
+      return {
+        name: `${employee.first_name} ${employee.last_name}`,
+        value: employee.id
+      };
+    });
+  
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "manager_id",
+          message: "Which manager would you like to view employees for?",
+          choices: employeeChoices
+        }
+      ])
+      .then(answers => {
+        db.query(`
+          SELECT employee.id, employee.first_name, employee.last_name, role.title
+          FROM employee
+          JOIN role ON employee.role_id = role.id
+          WHERE employee.manager_id = ${answers.manager_id}
+        `, function(err, employees) {
+          if (err) throw err;
+  
+          if (employees.length === 0) {
+            console.log("No employees found for this Nanager, Perhaps they are not a Manager.");
+          } else {
+            console.log("Employees:");
+            employees.forEach(employee => {
+              console.log(`${employee.first_name} ${employee.last_name} - ${employee.title}`);
+            });
+          }
+          promptUser();
+        });
+      });
+  });
+}
+function viewemployeesDepartment() {
+  console.log('Viewing Employees by Department');
+  db.query("SELECT id, name FROM department", function(err, departments) {
+    if (err) throw err;
+
+    let departmentChoices = departments.map(department => {
+      return {
+        name: department.name,
+        value: department.id
+      };
+    });
+
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "department_id",
+          message: "Which department would you like to view employees for?",
+          choices: departmentChoices
+        }
+      ])
+      .then(answers => {
+        db.query(`
+          SELECT employee.id, employee.first_name, employee.last_name, role.title
+          FROM employee
+          JOIN role ON employee.role_id = role.id
+          WHERE role.department_id = ${answers.department_id}
+        `, function(err, employees) {
+          if (err) throw err;
+
+          if (employees.length === 0) {
+            console.log("No employees found in this department.");
+          } else {
+            console.log("Employees:");
+            employees.forEach(employee => {
+              console.log(`${employee.first_name} ${employee.last_name} - ${employee.title}`);
+            });
+          }
+          promptUser();
+        });
+      });
+  });
+}
+ 
+
+function choiceDelete() {
+  console.log('Choose what to delete');
+  promptUser();
+  }
+function viewBudget() {
+  console.log('Viewing Budget by Department');
+  promptUser();
 }
 function quit() {
     console.log("Exiting...");
