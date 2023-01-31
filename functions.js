@@ -106,9 +106,9 @@ function updateEmployeeRole() {
             ])
             .then(answers => {
             
-              let sql = `UPDATE employee SET role_id = ${answers.role_id} WHERE id = ${answers.employee_id}`;
+              //let sql = `UPDATE employee SET role_id = ${answers.role_id} WHERE id = ${answers.employee_id}`;
     
-              db.query(sql, function(err, result) {
+              db.query(`UPDATE employee SET role_id = ${answers.role_id} WHERE id = ${answers.employee_id}`, function(err, result) {
                 if (err) throw err;
                 console.log("Employee role updated successfully!");
                 promptUser();
