@@ -433,7 +433,40 @@ function deleteRole() {
  }
 function viewBudget() {
   console.log('Viewing Budget by Department');
-  promptUser();
+  db.query("SELECT id, name FROM department", function(err, departments) {
+    if (err) throw err;
+
+    let departmentChoices = departments.map(department => {
+      return {
+        name: department.name,
+        value: department.id
+      };
+    });
+
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "department_id",
+          message: "Which department's budget would you like to view?",
+          choices: departmentChoices
+        }
+      ])
+      .then(answers => {
+        db.query(`
+          SELECT department.name, SUM(role.salary) as total_salary
+          FROM department
+          JOIN role ON department.id = role.department_id
+          JOIN employee ON role.id = employee.role_id
+          WHERE department.id = ${answers.department_id}
+          GROUP BY department.id
+        `, function(err, result) {
+          if (err) throw err;
+          console.log(`Total salary for ${result[0].name} department is $${result[0].total_salary}.`);
+          promptUser();
+        });
+      });
+  });
 }
 function quit() {
     console.log("Exiting...");
