@@ -26,3 +26,11 @@ CREATE TABLE employee(
   FOREIGN KEY (role_id)
   REFERENCES role(id)
  );
+
+ SELECT * FROM employee
+JOIN role
+ON employee.role_id = role.id;
+
+SELECT * FROM role
+JOIN department
+ON role.department_id = department.id;
