@@ -13,7 +13,7 @@ const db = mysql.createConnection(
       password: 'root',
       database: 'employeeDatabase_db'
     },
-    console.log(`Connected to the books_db database.`)
+    console.log(`Connected to the Employee Database.`)
 );
     promptUser();
 

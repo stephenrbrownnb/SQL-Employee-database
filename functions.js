@@ -215,6 +215,11 @@ function promptUser() {
             "Add Role",
             "View All Departments",
             "Add Department",
+            "Update employee Managers",
+            "View employees by Manager",
+            "View employees by Department",
+            "Delete Departments, roles or Employees",
+            "View Total budget of a department",
             "Quit",
         ],
         message: "Move up or down to reveal more choices",
@@ -243,6 +248,21 @@ function promptUser() {
             case "Add Department":
                 addDepartment();
                 break;
+            case "Update employee Managers":
+                updateEmployeeManager();
+                break;
+            case "View employees by Manager":
+                viewEmployeesManager();
+                break;
+            case "View employees by Department":
+                viewemployeesDepartment();
+                break;
+            case "Delete Departments, roles or Employees":
+                choiceDelete();
+                break;
+            case "View Total budget of a department":
+              viewBudget();
+              break;
             case "Quit":
                 quit();
                 break;
