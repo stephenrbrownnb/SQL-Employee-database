@@ -13,12 +13,11 @@ const db = mysql.createConnection(
       database: 'employeeDatabase_db'
     }
 );
-
-
-
 function viewAllEmployees() {
     console.table("Viewing all employees... \n");
-    db.query(`SELECT employee.id, employee.first_name, employee.last_name, role.title as title,role.salary as salary FROM employee LEFT JOIN role on employee.role_id = role.id;`,
+    db.query(
+    `SELECT e.id, e.first_name, e.last_name, r.title AS title, r.salary AS salary,(SELECT concat(first_name, ' ', last_name) FROM employee WHERE id = e.manager_id) AS Manager
+    FROM employee e LEFT JOIN role r ON e.role_id = r.id;`,
     function(err,res){
         if (err) throw err;
         console.table(res);
@@ -26,44 +25,50 @@ function viewAllEmployees() {
     });
      
 }
-function addEmployee() {
-    console.log("Adding a new employee...");
-    db.query("SELECT id, title FROM role", function (err, roles) {
-        if (err) throw err;
-        const roleTitles = roles.map(role => role.title);
-        inquirer
-          .prompt([
-            {
-              name: 'first_name',
-              type: 'input',
-              message: 'Enter the employee`s first name:'
-            },
-            {
-              name: 'last_name',
-              type: 'input',
-              message: 'Enter the employee`s last name:'
-            },
-            {
-              name: 'role_id',
-              type: 'list',
-              message: 'Select the employee`s role:',
-              choices: roleTitles
-            },
-            {
-              name: 'manager_id',
-              type: 'input',
-              message: 'Enter the employee`s manager id:'
-            }
-          ])
-          .then(answers => {
-            const selectedRole = roles.find(role => role.title === answers.role_id);
-            db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${answers.first_name}', '${answers.last_name}', '${selectedRole.id}', '${answers.manager_id}')`, function (err, result) {
-              if (err) throw err;
-              console.log("1 record inserted");
-              promptUser();
+ function addEmployee() {
+  console.log("Adding a new employee...");
+  db.query("SELECT id, title FROM role", function (err, roles) {
+      if (err) throw err;
+      const roleTitles = roles.map(role => role.title);
+      db.query("SELECT id, first_name, last_name FROM employee", function (err, employees) {
+          if (err) throw err;
+          const employeeNames = employees.map(employee => `${employee.first_name} ${employee.last_name}`);
+          inquirer
+            .prompt([
+              {
+                name: 'first_name',
+                type: 'input',
+                message: 'Enter the employee`s first name:'
+              },
+              {
+                name: 'last_name',
+                type: 'input',
+                message: 'Enter the employee`s last name:'
+              },
+              {
+                name: 'role_id',
+                type: 'list',
+                message: 'Select the employee`s role:',
+                choices: roleTitles
+              },
+              {
+                name: 'manager_id',
+                type: 'list',
+                message: 'Select the employee`s manager:',
+                choices: employeeNames
+              }
+            ])
+            .then(answers => {
+              const selectedRole = roles.find(role => role.title === answers.role_id);
+              const selectedManager = employees.find(employee => `${employee.first_name} ${employee.last_name}` === answers.manager_id);
+              db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${answers.first_name}', '${answers.last_name}', '${selectedRole.id}', '${selectedManager.id}')`, function (err, result) {
+                if (err) throw err;
+                console.log("1 record inserted");
+                promptUser();
+              });
             });
-          });
-    });
+      });
+  });
 }
 function updateEmployeeRole() {
     console.log("Updating employee role...");
@@ -314,7 +319,7 @@ function viewemployeesDepartment() {
       });
   });
 }
- function choiceDelete() {
+function choiceDelete() {
   console.log('Choose what to delete');
   
 inquirer
@@ -471,7 +476,6 @@ function viewBudget() {
 function quit() {
     console.log("Exiting...");
 }
-
 function promptUser() {
     inquirer
     .prompt([
@@ -545,5 +549,4 @@ function promptUser() {
 
 
 }
-
 module.exports = {viewAllEmployees, addEmployee, updateEmployeeRole, viewAllRoles, addRole, viewAllDepartments, addDepartment, quit, promptUser}
