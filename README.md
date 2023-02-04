@@ -10,7 +10,7 @@
 ## Description
 
 An app which uses the SQL Database and Inquirer to manage an Employee database using command prompts.  
-![screenshot](assets/employeedatabase.jpg)
+![screenshot](assets/employeedatabase.JPG)
 ## Installation 
 To install locally type npm install to install the required programs. The Schema also needs to be run on SQL to initate the Database.   
 
